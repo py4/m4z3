@@ -7,8 +7,8 @@ using namespace std;
 class Cell {
 public:
 	
-Cell() : i(0) , j(0) , bitmask(0) {}
-Cell(int i, int j, int bitmask = 0) : i(i), j(j), bitmask(bitmask) {}
+Cell() : i(0) , j(0) , bitmask(0), seen(false) {}
+Cell(int i, int j, int bitmask = 0) : i(i), j(j), bitmask(bitmask), seen(false) {}
 	int i;
 	int j;
 	int bitmask; // L U R D
@@ -16,6 +16,8 @@ Cell(int i, int j, int bitmask = 0) : i(i), j(j), bitmask(bitmask) {}
 	void open(char);
 	void close(char);
 	bool can_go(char);
+
+	bool seen;
 };
 
 ostream& operator<<(ostream&,Cell);

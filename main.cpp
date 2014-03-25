@@ -1,11 +1,13 @@
 #include <iostream>
+#include <cstdlib>
 #include "maze.h"
 using namespace std;
 
 int main()
 {
+	srand(time(NULL));
 	Cell cell;
-	Maze Maze(3,4);
-	cout << Maze.cells[2][3] << endl;
+	Maze maze(3,4);
+	maze.generate();
 	return 0;
 }
