@@ -2,6 +2,7 @@
 #define __CELL_H
 
 #include <iostream>
+#include "graphic.h"
 using namespace std;
 
 class Cell {
@@ -18,6 +19,8 @@ Cell(int i, int j, int bitmask = 0) : i(i), j(j), bitmask(bitmask), seen(false) 
 	bool can_go(char);
 
 	bool seen;
+
+	void dump_on_screen(SDL_Surface*&);
 };
 
 ostream& operator<<(ostream&,Cell);

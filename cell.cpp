@@ -29,6 +29,43 @@ bool Cell::can_go(char direction)
 	return (1 << (3 - get_mask_index(direction))) & bitmask;
 }
 
+void Cell::dump_on_screen(SDL_Surface*& screen)
+{
+	SDL_Rect rect;
+	if(!can_go('U'))
+	{
+		rect.x = j * 25;
+		rect.y = i * 25;
+		rect.h = 5;
+		rect.w = 25;
+		SDL_FillRect(screen,&rect,0x000000);
+	}
+	if(!can_go('D'))
+	{
+		rect.x = j * 25;
+		rect.y = (i+1) * 25;
+		rect.h = 5;
+		rect.w = 25;
+		SDL_FillRect(screen,&rect,0x000000);
+	}
+	if(!can_go('L'))
+	{
+		rect.x = j * 25;
+		rect.y = i * 25;
+		rect.h = 25;
+		rect.w = 5;
+		SDL_FillRect(screen,&rect,0x000000);
+	}
+	if(!can_go('R'))
+	{
+		rect.x = (j+1) * 25;
+		rect.y = i * 25;
+		rect.h = 25;
+		rect.w = 5;
+		SDL_FillRect(screen,&rect,0x000000);
+	}
+}
+
 ostream& operator<<(ostream& out,Cell cell)
 {
 	out << "i,j : " << cell.i << " " << cell.j << endl;;
@@ -39,3 +76,5 @@ ostream& operator<<(ostream& out,Cell cell)
 	//out << "bitmask: " << cell.bitmask << endl;;
 	return out;
 }
+
+

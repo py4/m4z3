@@ -4,7 +4,7 @@
 
 int Maze::passed;
 
-Maze::Maze(int r_count, int c_count)
+bool Maze::init(int r_count,int c_count)
 {
 	cells = new Cell*[r_count];
 	for(int i = 0; i < r_count; i++)
@@ -19,7 +19,44 @@ Maze::Maze(int r_count, int c_count)
 	row_count = r_count;
 	column_count = c_count;
 	passed = 0;
-	current_cell = &(cells[0][0]);
+
+	current_cell = &(cells[rand() % row_count][rand() % column_count]);
+	final_cell = &(cells[rand() % row_count][rand() % column_count]);
+	
+	generate();
+
+	if(init_screen())
+		return true;
+	return false;
+	
+}
+
+bool Maze::init_screen()
+{
+	if(SDL_Init(SDL_INIT_EVERYTHING) == -1)
+	{
+		cerr << "couldn't init" << endl;
+		return false;
+	}
+	
+	screen = SDL_SetVideoMode(SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,SDL_SWSURFACE);
+	if(screen == NULL)
+	{
+		cerr << "set video mode failed" << endl;
+		cerr << SDL_GetError() << endl;
+		return false;
+	}
+
+	if(!resources.init())
+	{
+		cerr << "could not init resources" << endl;
+		return false;
+	}
+
+	SDL_WM_SetCaption("M4Z3",NULL);
+	clear_screen();
+
+	return true;
 }
 
 bool Maze::go_strictly(char direction)
@@ -87,19 +124,14 @@ bool Maze::generate()
 	
 	char directions[4] = {'U','D','L','R'};
 	random_shuffle(directions,directions+4);
-//  cerr << "I'm in i,j: " << current_cell->i << " " << current_cell->j << endl;
 	for(int i = 0; i < DIR_COUNT; i++)
 	{
 		if(current_cell->can_go(directions[i]))
 			continue;
-		cerr << "current cell:  " << *current_cell << endl;
 		current_cell->open(directions[i]);
-		cerr << "wanna go " << directions[i] << "so I became:  " << *current_cell << endl;
 		if(go_strictly(directions[i]))
 		{
-			cerr << "I succedded and now I'm: ";
 			current_cell->open(get_opposite_dir(directions[i]));
-			cerr << *current_cell << endl;
 			if(!current_cell->seen)
 			{
 				if(generate())
@@ -109,55 +141,84 @@ bool Maze::generate()
 					passed--;
 					current_cell->seen = false;
 					char direction = get_opposite_dir(directions[i]);
-					cerr << "no other choices and I go back to " << direction << endl;
 					current_cell->close(direction);
-					cerr << "I became it before going back:  " << *current_cell << endl;
 					if(!go_strictly(direction))
 						cerr << "[generate] >>>> bug <<<<" << endl;
 					current_cell->close(get_opposite_dir(direction));
-					cerr << "now I became:  " << *current_cell << endl;
 				}
 			}
 			else
 			{
 				int index = i + pow(-1,i % 2);
 				char direction = get_opposite_dir(directions[i]);
-				cerr << "have seen this before and I'm going back to " << direction << endl;
 				current_cell->close(direction);
-				cerr << "I became it before going back:  " << *current_cell << endl;
 				go_strictly(direction);
 				current_cell->close(get_opposite_dir(direction));
-				cerr << "now I became:  " << *current_cell << endl;
 			}
 		}
 		else
-		{
-			cerr << "couldn't go so I became: ";
 			current_cell->close(directions[i]);
-			cerr << *current_cell << endl;
-		}
 	}
 	return false;
+}
+
+void Maze::free_everything()
+{
+	SDL_FreeSurface(screen);
+}
+
+void Maze::clear_screen()
+{
+	SDL_Rect rect;
+	rect.x = rect.y = 0;
+	rect.h = 480;
+	rect.w = 640;
+	SDL_FillRect(screen,&rect,0xffffff);
+	SDL_Flip(screen);
+}
+
+void Maze::dump_on_screen()
+{
+	clear_screen();
+	for(int i = 0; i < row_count; i++)
+		for(int j = 0; j < column_count; j++)
+			cells[i][j].dump_on_screen(screen);
+
+	cout << "current cell:  " << *current_cell << endl;
+	cout << "final cell:  " << *final_cell << endl;
+
+	SDL_Rect rect;
+	rect.x = (current_cell->j * 25) + 12.5;
+	rect.y = (current_cell->i * 25) + 12.5;
+	rect.h = 10;
+	rect.w = 10;
+	SDL_FillRect(screen,&rect,0x00FF00);
+
+	rect.x = (final_cell->j * 25) + 12.5;
+	rect.y = (final_cell->i * 25) + 12.5;
+	rect.h = 10;
+	rect.w = 10;
+	SDL_FillRect(screen,&rect,0xFF0000);
+	
+	SDL_Flip(screen);
+}
+
+bool Maze::handle_key(char direction)
+{
+	if(current_cell->can_go(direction))
+		go_strictly(direction);
+	
+	if(current_cell == final_cell)
+		return true;
+	else
+		return false;
 }
 
 ostream& operator<<(ostream& out, const Maze& maze)
 {
 	for(int i = 0; i < maze.row_count; i++)
-	{
 		for(int j = 0;j < maze.column_count; j++)
-		{
-/*			if(i == 0)
-				cout << "--";
-			if(!maze.cells[i][j].can_go('L'))
-				cout << "|";
-			if(!maze.cells[i][j].can_go('D'))
-				cout << "__";
-			if(j == maze.column_count - 1)
-			cout << "|";*/
-			cout << maze.cells[i][j] << endl;
-		}
-//		cout << endl;
-	}
+			out << maze.cells[i][j] << endl;
 	return out;
 }
 
