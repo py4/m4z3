@@ -9,5 +9,7 @@ int main()
 	Cell cell;
 	Maze maze(3,4);
 	maze.generate();
+	cout << "==============" << endl;
+	cout << maze << endl;
 	return 0;
 }

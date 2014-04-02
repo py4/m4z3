@@ -18,4 +18,6 @@ public:
 	bool go_strictly(char);
 };
 
+ostream& operator<<(ostream&, const Maze&);
+
 

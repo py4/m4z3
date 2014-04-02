@@ -25,7 +25,6 @@ Maze::Maze(int r_count, int c_count)
 bool Maze::go_strictly(char direction)
 {
 	int i = current_cell->i , j = current_cell->j;
-	bool success = false;
 	switch(direction)
 	{
 
@@ -88,14 +87,21 @@ bool Maze::generate()
 	
 	char directions[4] = {'U','D','L','R'};
 	random_shuffle(directions,directions+4);
-  cerr << "I'm in i,j: " << current_cell->i << " " << current_cell->j << endl;
+//  cerr << "I'm in i,j: " << current_cell->i << " " << current_cell->j << endl;
 	for(int i = 0; i < DIR_COUNT; i++)
 	{
+		if(current_cell->can_go(directions[i]))
+			continue;
+		cerr << "current cell:  " << *current_cell << endl;
+		current_cell->open(directions[i]);
+		cerr << "wanna go " << directions[i] << "so I became:  " << *current_cell << endl;
 		if(go_strictly(directions[i]))
 		{
+			cerr << "I succedded and now I'm: ";
+			current_cell->open(get_opposite_dir(directions[i]));
+			cerr << *current_cell << endl;
 			if(!current_cell->seen)
 			{
-				cerr << "I'm going " << directions[i] << " to i,j:  " << current_cell->i << " " << current_cell->j << endl;
 				if(generate())
 					return true;
 				else
@@ -103,20 +109,56 @@ bool Maze::generate()
 					passed--;
 					current_cell->seen = false;
 					char direction = get_opposite_dir(directions[i]);
+					cerr << "no other choices and I go back to " << direction << endl;
+					current_cell->close(direction);
+					cerr << "I became it before going back:  " << *current_cell << endl;
 					if(!go_strictly(direction))
 						cerr << "[generate] >>>> bug <<<<" << endl;
-					cerr << "no other choice! I'm back to i,j:  " << current_cell->i << " " << current_cell->j << endl;
+					current_cell->close(get_opposite_dir(direction));
+					cerr << "now I became:  " << *current_cell << endl;
 				}
 			}
 			else
 			{
 				int index = i + pow(-1,i % 2);
 				char direction = get_opposite_dir(directions[i]);
+				cerr << "have seen this before and I'm going back to " << direction << endl;
+				current_cell->close(direction);
+				cerr << "I became it before going back:  " << *current_cell << endl;
 				go_strictly(direction);
+				current_cell->close(get_opposite_dir(direction));
+				cerr << "now I became:  " << *current_cell << endl;
 			}
+		}
+		else
+		{
+			cerr << "couldn't go so I became: ";
+			current_cell->close(directions[i]);
+			cerr << *current_cell << endl;
 		}
 	}
 	return false;
+}
+
+ostream& operator<<(ostream& out, const Maze& maze)
+{
+	for(int i = 0; i < maze.row_count; i++)
+	{
+		for(int j = 0;j < maze.column_count; j++)
+		{
+/*			if(i == 0)
+				cout << "--";
+			if(!maze.cells[i][j].can_go('L'))
+				cout << "|";
+			if(!maze.cells[i][j].can_go('D'))
+				cout << "__";
+			if(j == maze.column_count - 1)
+			cout << "|";*/
+			cout << maze.cells[i][j] << endl;
+		}
+//		cout << endl;
+	}
+	return out;
 }
 
 

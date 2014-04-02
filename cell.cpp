@@ -32,6 +32,10 @@ bool Cell::can_go(char direction)
 ostream& operator<<(ostream& out,Cell cell)
 {
 	out << "i,j : " << cell.i << " " << cell.j << endl;;
-	out << "bitmask: " << cell.bitmask << endl;;
+	out << "can go up: " << cell.can_go('U') << endl;
+	out << "can go down:  " << cell.can_go('D') << endl;
+	out << "can go left:  " << cell.can_go('L') << endl;
+	out << "can go right:  " << cell.can_go('R') << endl;
+	//out << "bitmask: " << cell.bitmask << endl;;
 	return out;
 }
